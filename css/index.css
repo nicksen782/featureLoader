@@ -1,0 +1,50 @@
+html{
+	background-color:steelblue;
+	font-size: 20px;
+	font-family: "Lucida Console", Monaco, monospace;
+}
+#scanresults {
+	margin: auto;
+	text-align: center;
+	/* background-color:green; */
+}
+
+#scanresults table {
+	width: 90%;
+	/* background-color:red; */
+	background-color:lightsteelblue;
+	margin: auto;
+	/*border-collapse: initial;*/
+	padding: 0px;
+	empty-cells: show;
+}
+
+#scanresults table tr th {
+	text-align: left;
+	font-weight: bold;
+	text-decoration: underline;
+}
+
+#scanresults table tr:nth-child(1) th {
+	text-align: center;
+	font-weight: bold;
+	text-decoration: underline;
+}
+
+#scanresults table th, #scanresults table td {
+	border: 1px solid black !important;
+	margin: 0px;
+	padding: 4px;
+	/*font-size: 9pt;*/
+	empty-cells: show;
+	/*font-size: 22px;*/
+	font-size: 16px;
+}
+#scanresults table tr:nth-child(1) th:nth-child(7) ,
+#scanresults table td:nth-child(7) {
+	text-align:left;
+}
+/*#scanresults table tr:nth-child(1) th:nth-child(6) ,*/
+/*#scanresults table td:nth-child(6) {*/
+/*	text-align:center;*/
+/*}*/
