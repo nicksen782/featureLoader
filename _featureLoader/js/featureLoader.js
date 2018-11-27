@@ -14,24 +14,25 @@ var featureDetection = {
 		userReqs  : []
 	},
 	funcs:{
-
-		evalInContext : function(js, context) {
+		// Performs eval within the specified context on a string.
+		evalInContext             : function(js, context) {
 			// featureDetection.funcs.evalInContext(data, window);
 			return function() { eval(js); }.call(context);
-		},
+		} ,
+		// Checks if the feature has already been loaded.
 		isTheFeatureAlreadyLoaded : function(feature){
 			var keys = Object.keys(featureDetection.reqs);
 
 			// Is the requested feature one that is known to us?
 			if     ( keys.indexOf(feature) == -1 ){
-				console.log("  -- UNKNOWN FEATURE: (T1)", feature);
+				console.log("  -- UNKNOWN FEATURE:", feature, "(E:1)");
 				return true;
 				// return false;
 			}
 
 			// Similar check to the one above.
 			else if( featureDetection.reqs[feature] == "undefined" ){
-				console.log("  -- UNKNOWN FEATURE (T2):", feature);
+				console.log("  -- UNKNOWN FEATURE:", feature, "(E:2)");
 				return true;
 				// return false;
 			}
@@ -48,9 +49,10 @@ var featureDetection = {
 				// return true;
 				return false;
 			}
-		},
-
-		applyFeatures_fromList : function(features){
+		}      ,
+		// Loads the specified features via an array.
+		applyFeatures_fromList    : function(features){
+			// Used if the loading method was PHP:
 			var PHP_combinedFeatures = function(features){
 				return new Promise(function(resolve,reject){
 					var new_features = [];
@@ -99,6 +101,7 @@ var featureDetection = {
 
 				});
 			};
+			// Used if the loading method was not PHP:
 			var JS_features = function(features, syncType){
 				var loadFeature = function(feature){
 					return new Promise(function(resolve, reject){
@@ -122,6 +125,7 @@ var featureDetection = {
 							console.log("error:", this, data);
 							reject(data);
 						};
+
 						var xhr = new XMLHttpRequest();
 						xhr.addEventListener("load", finished);
 						xhr.addEventListener("error", error);
@@ -192,33 +196,43 @@ var featureDetection = {
 			};
 
 			return new Promise(function(resolve,reject){
+				// Use PHP?
 				if(featureDetection.config.usePhp===true){
 					// Get the code for each feature as one download.
 					PHP_combinedFeatures(features).then(
-						function(res){ resolve(res); },
+						function(res){
+							resolve(res);
+						},
 						function(res){ console.log("ERROR", res); reject(res); }
 					);
 				}
+				// No PHP. Use JavaScript.
 				else{
-					// Use Promise.all to start all downloads. (ASYNC)
+					// Use Promise.all to start all downloads? (ASYNC)
 					if     (featureDetection.config.useAsync===true){
 						JS_features(features, "async").then(
-							function(res){ resolve(res); },
+							function(res){
+								resolve(res);
+							},
 							function(res){ console.log("ERROR", res); reject(res); }
 						);
 					}
-					// Chain each download one after the other. (SYNC)
+					// Chain each download one after the other? (SYNC)
 					else{
 						JS_features(features, "sync").then(
-							function(res){ resolve(res); },
+							function(res){
+								resolve(res);
+							},
 							function(res){ console.log("ERROR", res); reject(res); }
 						);
 					}
 				}
 
 			});
-		} ,
-		getDatabase            : function(){
+		}     ,
+		// Retrieve the features database from the server.
+		getDatabase               : function(){
+			// if(featureDetection.config.usePhp===true){
 			return new Promise(function(resolve,reject){
 				var method;
 				var url;
@@ -237,18 +251,27 @@ var featureDetection = {
 					console.log("error:", this, data);
 					reject();
 				};
+
 				var xhr = new XMLHttpRequest();
 				xhr.addEventListener("load", finished);
 				xhr.addEventListener("error", error);
 
 				var fd   = new FormData();
 				var o    = "getDb" ;
-				fd.append("o" , o);
-				fd.append("includeText"    , featureDetection.config.includeText   );
-				fd.append("includeWebsite" , featureDetection.config.includeWebsite);
 
-				method="POST";
-				url="_featureLoader/_p/featureLoader_p.php";
+				// Use PHP?
+				if(featureDetection.config.usePhp===true){
+					method="POST";
+					fd.append("o" , o);
+					fd.append("includeText"    , featureDetection.config.includeText   );
+					fd.append("includeWebsite" , featureDetection.config.includeWebsite);
+					url="_featureLoader/_p/featureLoader_p.php?o="+o;
+				}
+				// No PHP. Use JavaScript.
+				else {
+					method="GET";
+					url="_featureLoader/featureLoader.json?o="+o;
+				}
 
 				xhr.open(
 					method, // Type of method (GET/POST)
@@ -257,8 +280,9 @@ var featureDetection = {
 
 				xhr.send(fd);
 			});
-		}         ,
-		detectAndApply         : function(){
+		}             ,
+		// Run the tests within the feature list to determine what needs to be loaded.
+		detectAndApply            : function(){
 			var detect = function(){
 				return new Promise(function(resolve, reject){
 					var missingReqs = [];
@@ -267,7 +291,7 @@ var featureDetection = {
 					for(var k in featureDetection.reqs){
 						try{
 							// TEST: check for a result of false.
-							// If the test throws an exception it will still be caught.
+							// If the test is false or throws an exception it will be caught.
 							if( eval(featureDetection.reqs[k].test) === false){
 								throw "The specified feature is missing.";
 							}
@@ -335,7 +359,9 @@ var featureDetection = {
 									function(res){
 										// Then apply the polys.
 										featureDetection.funcs.applyFeatures_fromList(libs_missingReqs).then(
-											function(res){ resolve(res); },
+											function(res){
+												resolve(res);
+											},
 											function(res){ console.log("error", res); reject(res); }
 										);
 									},
@@ -352,26 +378,28 @@ var featureDetection = {
 
 			});
 
-		}         ,
-		init                   : function(callback){
+		}             ,
+		// This will perform the feature detection and feature loading.
+		init                      : function(callback){
+			// Because it is possible that Promise support is not available yet, this function takes a callback instead of returning a Promise.
 			var nextStep = function(callback){
 				featureDetection.funcs.detectAndApply().then(
 					function(res){
 						callback(res);
 					},
-					function(res){ console.log("1 error"  , res); }
+					function(res){ console.log("error"  , res); }
 				);
 			};
 
-			// First, Promise support must be checked for.
+			// Do we have Promise support?
 			if(typeof Promise=="undefined"){
-				var js=document.createElement("script");
-				js.onload=function(){
-					nextStep(callback);
-				};
-				js.src="_featureLoader/libs/bluebird.min.js";
+				// No. Add Promise support via the Bluebird Promise library.
+				var js    = document.createElement("script");
+				js.onload = function(){ nextStep(callback); };
+				js.src    = "_featureLoader/libs/bluebird.min.js";
 				document.body.appendChild(js);
 			}
+			// We have Promise support. Go to the next step.
 			else{
 				nextStep(callback);
 			}
