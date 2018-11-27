@@ -1,22 +1,80 @@
-html{
-	background-color:steelblue;
-	font-size: 20px;
-	font-family: "Lucida Console", Monaco, monospace;
+html {
+	background-color: black;
 }
+
+body {
+	font-size: 14px;
+	font-family: "Lucida Console", Monaco, monospace;
+	width: 1080px;
+	margin: 5px auto;
+	padding: 5px 5px 5px 5px;
+}
+
+#header {
+	background-color: steelblue;
+	text-align: center;
+	font-size: 18px;
+	/* padding: 0px 5px 0px 5px; */
+}
+
+#main {
+	background-color: steelblue;
+	padding: 5px 5px 5px 5px;
+}
+
+#footer {
+	background-color: steelblue;
+	/* padding: 0px 5px 0px 5px; */
+}
+
+
+#links {
+	text-align: left;
+	margin: auto;
+	border: 0px solid black;
+	font-size: 14px;
+}
+
+#links table {
+	width: 98%;
+	background-color: #6a9ac1;
+	margin: auto;
+}
+
+#links table td:nth-child(1) {
+	font-size: 14px;
+}
+
+#links table td {
+	padding: 3px;
+}
+
+#links table tr.active a {
+	background-color: hsla(197, 57%, 65%, 1);
+}
+
+#links table tr.active a::before {
+	content: ">> ";
+	font-weight: bold;
+}
+
+#links table tr.active a::after {
+	content: " <<";
+	font-weight: bold;
+}
+
 #scanresults {
 	margin: auto;
 	text-align: center;
-	/* background-color:green; */
 }
 
 #scanresults table {
-	width: 90%;
-	/* background-color:red; */
-	background-color:lightsteelblue;
+	width: 98%;
+	background-color: lightsteelblue;
 	margin: auto;
-	/*border-collapse: initial;*/
 	padding: 0px;
 	empty-cells: show;
+	position: relative;
 }
 
 #scanresults table tr th {
@@ -30,21 +88,46 @@ html{
 	font-weight: bold;
 	text-decoration: underline;
 }
+#scanresults table th:nth-child(1){
+	font-size:16px;
+}
 
 #scanresults table th, #scanresults table td {
-	border: 1px solid black !important;
+	border: 1px solid black;
 	margin: 0px;
 	padding: 4px;
-	/*font-size: 9pt;*/
 	empty-cells: show;
-	/*font-size: 22px;*/
+}
+
+#scanresults table tr:nth-child(1) th:nth-child(7) , #scanresults table td:nth-child(7) {
+	text-align: left;
+}
+
+#scanresults table td, #scanresults table th {
+	padding: 5px;
+	vertical-align: middle;
+}
+
+#scanresults table caption {
+	background-color: #c8cfd8;
+	border: 1px solid black;
+	font-size: 26px;
+	/* height: 30px; */
+	padding: 5px;
+}
+
+.bold {
+	font-weight: bold;
+}
+
+.underline {
+	text-decoration: underline;
+}
+
+.loadtimeCaption {
+	position: absolute;
+	top: 10px;
+	right: 15px;
+	/* height: 100px; */
 	font-size: 16px;
 }
-#scanresults table tr:nth-child(1) th:nth-child(7) ,
-#scanresults table td:nth-child(7) {
-	text-align:left;
-}
-/*#scanresults table tr:nth-child(1) th:nth-child(6) ,*/
-/*#scanresults table td:nth-child(6) {*/
-/*	text-align:center;*/
-/*}*/
