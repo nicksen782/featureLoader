@@ -59,9 +59,9 @@
   "test"        : "if(typeof moment === \"undefined\")  { false; } else { true; };",
   "website"     : "http:/momentjs.com/"
  },
- "xml2json": {
+ "X2JS": {
   "type"        : "library",
-  "text"        : "",
+  "text"        : "XML to JSON and back for JavaScript",
   "req"         : false,
   "have"        : null,
   "hadNatively" : null,

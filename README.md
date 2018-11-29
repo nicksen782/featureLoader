@@ -35,6 +35,7 @@ INCLUDED LIBRARIES AND POLYFILLS:
 * [sha512] - Hashing library that can be used for hashing passwords.
 * [chartsJs] - Simple yet flexible JavaScript charting for designers & developers
 * [momentJs] - Parse, validate, manipulate, and display dates and times in JavaScript.
+* [X2JS] - XML to JSON and back for JavaScript.
 * [repeat] - Required for .padEnd and .padStart. The repeat() method constructs and returns a new string which contains the specified number of copies of the string on which it was called, concatenated together.
 * [padStart] - The padStart() method pads the current string with another string (multiple times, if needed)
 * [padEnd] - The padEnd() method pads the current string with a given string (repeated, if needed) so that the resulting string reaches a given length.
@@ -83,10 +84,6 @@ window.onload = function(){
 		// "momentJs"
 	];
 
-	console.log("********************************");
-	console.log("*** -- Feature Loader v1c -- ***");
-	console.log("********************************");
-
 	// Feature detect/replace.
 	featureDetection.funcs.init(
 		function(res){
@@ -117,7 +114,7 @@ GPL3
 [sha512]:<https://web.archive.org/web/20170806032838/http://www.happycode.info:80/javascript-sha-512/>
 [chartsJs]:<https://www.chartjs.org/>
 [momentJs]:<http://momentjs.com/>
-
+[X2JS]:<https://github.com/abdmob/x2js/>
 [repeat]:<https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/repeat>
 [padStart]:<https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/padStart>
 [padEnd]:<https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/padEnd>
