@@ -53,6 +53,16 @@ var featureDetection = {
 			, 'test' : 'hex_sha512;'
 			, 'website' : 'http://pajhome.org.uk/crypt/md5'
 		}
+		, 'xml2json'           : {
+			  'type' : 'library'
+			, 'text' : "x2js - XML to JSON and back for JavaScript"
+			, 'req'  : false
+			, 'have' : null
+			, 'hadNatively' : null
+			, 'url'  : ['js/libs/xml2json.min.js']
+			, 'test' : 'X2JS;'
+			, 'website' : 'https://github.com/abdmob/x2js'
+		}
 
 		// Polyfills:
 		, 'repeat'           : {
