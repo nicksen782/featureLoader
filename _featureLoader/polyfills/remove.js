@@ -5,9 +5,6 @@
     if (item.hasOwnProperty('remove')) {
       return;
     }
-
-    // console.log("FEATURE REPLACEMENT: Element.prototype.remove is missing. Adding with polyfill...");
-
     Object.defineProperty(item, 'remove', {
       configurable: true,
       enumerable: true,
@@ -17,6 +14,4 @@
       }
     });
   });
-
-// })([Element.prototype, CharacterData.prototype, DocumentType.prototype]);
-})([Element.prototype]);
+})([Element.prototype, CharacterData.prototype, DocumentType.prototype]);

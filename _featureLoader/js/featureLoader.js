@@ -17,38 +17,42 @@ var featureDetection = {
 		// Performs eval within the specified context on a string.
 		evalInContext             : function(js, context) {
 			// featureDetection.funcs.evalInContext(data, window);
-			return function() { eval(js); }.call(context);
+			return function() { eval(js) ; }.call(context);
 		} ,
 		// Checks if the feature has already been loaded.
 		isTheFeatureAlreadyLoaded : function(feature){
 			var keys = Object.keys(featureDetection.reqs);
 
-			// Is the requested feature one that is known to us?
-			if     ( keys.indexOf(feature) == -1 ){
-				console.log("  -- UNKNOWN FEATURE:", feature, "(E:1)");
-				return true;
-				// return false;
+			// Check right away if the feature's test will pass.
+			try{
+				// Does the test pass?
+				if( eval(featureDetection.reqs[feature].test) === false ){
+					// This feature CAN be loaded.
+					return false;
+				}
+				else                                                    {
+					throw "The specified feature is missing.";
+				}
+			}
+			catch(e){
+				// Is the requested feature one that is known to us?
+				if     ( keys.indexOf(feature) == -1 ){
+					console.log("  -- UNKNOWN FEATURE:", feature, "(E:1)");
+					return true;
+				}
+
+				// Similar check to the one above (likely redunant.)
+				else if( featureDetection.reqs[feature] == undefined ){
+					console.log("  -- UNKNOWN FEATURE:", feature, "(E:2)");
+					return true;
+				}
+
+				// This feature CAN be loaded.
+				else{
+					return false;
+				}
 			}
 
-			// Similar check to the one above.
-			else if( featureDetection.reqs[feature] == "undefined" ){
-				console.log("  -- UNKNOWN FEATURE:", feature, "(E:2)");
-				return true;
-				// return false;
-			}
-
-			// Is this one already loaded?
-			else if( featureDetection.reqs[feature].have == true){
-				// console.log("  -- ALREADY LOADED:", feature);
-				return true;
-				// return false;
-			}
-
-			// This feature can be loaded.
-			else{
-				// return true;
-				return false;
-			}
 		}      ,
 		// Loads the specified features via an array.
 		applyFeatures_fromList    : function(features){
@@ -72,8 +76,22 @@ var featureDetection = {
 						data = xhr.response;
 						featureDetection.funcs.evalInContext(data, window);
 						new_features.map(function(d,i,a){
-							featureDetection.reqs[d].have=true;
-							console.log("  LOADED: ("+featureDetection.reqs[d].type+") ->" , d ,  " " );
+							// Check if the feature's test will pass.
+							try{
+								// Does the test pass?
+								if( eval(featureDetection.reqs[d].test) == true ){
+									featureDetection.reqs[d].have=true;
+									console.log("  LOADED: ("+featureDetection.reqs[d].type+") ->" , d ,  " (OK)" );
+								}
+								else {
+									featureDetection.reqs[d].have=false;
+									throw "Feature was NOT successfully loaded.";
+								}
+							}
+							catch(e){
+								featureDetection.reqs[d].have=false;
+								console.log("** FAILURE TO LOAD: ("+featureDetection.reqs[d].type+") ->" , d ,  " (ERROR)" );
+							}
 						});
 
 						resolve();
@@ -92,7 +110,7 @@ var featureDetection = {
 					fd.append("missingReqs" , new_features );
 
 					var url = "_featureLoader/_p/featureLoader_p.php?o="+o+"&missingReqs="+new_features.join(",");
-
+					// console.log(url);
 					xhr.open(
 						"POST", // Type of method (GET/POST)
 						url  // Destination
@@ -117,8 +135,24 @@ var featureDetection = {
 						var finished = function(data) {
 							data = xhr.response;
 							featureDetection.funcs.evalInContext(data, window);
-							featureDetection.reqs[feature].have=true;
-							console.log("  LOADED: ("+type+") ->" , feature ,  " " );
+
+							// Check if the feature's test will pass.
+							try{
+								// Does the test pass?
+								if( eval(featureDetection.reqs[feature].test) == true ){
+									featureDetection.reqs[feature].have=true;
+									console.log("  LOADED: ("+featureDetection.reqs[feature].type+") ->" , feature ,  " (OK)" );
+								}
+								else {
+									featureDetection.reqs[feature].have=false;
+									throw "Feature was NOT successfully loaded.";
+								}
+							}
+							catch(e){
+								featureDetection.reqs[feature].have=false;
+								console.log("** FAILURE TO LOAD: ("+featureDetection.reqs[feature].type+") ->" , feature ,  " (ERROR)" );
+							}
+
 							resolve();
 						};
 						var error = function(data) {
@@ -347,7 +381,13 @@ var featureDetection = {
 
 								// Change the order of the missingReqs so that polyfills load before libraries.
 								var keys_libs  = ( missingReqs.filter(function(d,i,a){ if(featureDetection.reqs[d].type=="library")  { return d; } } ) );
-								var keys_polys = ( missingReqs.filter(function(d,i,a){ if(featureDetection.reqs[d].type=="polyfill") { return d; } } ) );
+								var keys_polys = ( missingReqs.filter(function(d,i,a){
+									if(
+										featureDetection.reqs[d].type=="polyfill"       ||
+										featureDetection.reqs[d].type=="customFunction"
+										) { return d; }
+									}
+								));
 								for(f=0; f<keys_libs.length; f+=1 ){ libs_missingReqs .push( keys_libs[f]  ); }
 								for(f=0; f<keys_polys.length; f+=1){ polys_missingReqs.push( keys_polys[f] ); }
 
@@ -381,11 +421,25 @@ var featureDetection = {
 		}             ,
 		// This will perform the feature detection and feature loading.
 		init                      : function(callback){
+			console.log("FEATURE DETECTION/APPLY: START");
+			var startTS = performance.now();
+			var endTS = 0;
+			var duration = 0;
+
 			// Because it is possible that Promise support is not available yet, this function takes a callback instead of returning a Promise.
 			var nextStep = function(callback){
 				featureDetection.funcs.detectAndApply().then(
 					function(res){
-						callback(res);
+						endTS = performance.now();
+						duration = (endTS-startTS).toFixed(2);
+						console.log("FEATURE DETECTION/APPLY: END" + " ("+duration+" ms)", res ? res : "");
+
+						callback(
+							{
+								res      : res,
+								duration : duration
+							}
+						);
 					},
 					function(res){ console.log("error"  , res); }
 				);
@@ -406,7 +460,6 @@ var featureDetection = {
 
 		}
 	}
-
 };
 	// EXAMPLE USAGE:
 	/*
@@ -439,17 +492,16 @@ window.onload = function(){
 	console.log("********************************");
 
 	// Feature detect/replace.
-	console.log("FEATURE DETECTION: START");
 	featureDetection.funcs.init(
 		function(res){
-			console.log("FEATURE DETECTION: END");
+			var endTS=performance.now().toFixed(1);
+			clearInterval(intervalId);
 
 			// Ready to continue with the rest of the application setup!
-			//
-
+			drawResultsTable() ;
+			updateLoadtime(res.duration);
 		}
 	);
-
 
 };
 

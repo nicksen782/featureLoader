@@ -20,18 +20,20 @@ function drawResultsTable(){
 	for (i = (table.rows.length) - 1; i > 0; i--) { table.deleteRow(i); }
 
 	var keys_libs  = ( keys.filter(function(d,i,a){ if(featureDetection.reqs[d].type=="library")  { return d; } } ) );
-	var keys_polys = ( keys.filter(function(d,i,a){ if(featureDetection.reqs[d].type=="polyfill") { return d; } } ) );
+	var keys_polys = ( keys.filter(function(d,i,a){ if( featureDetection.reqs[d].type=="polyfill") { return d; } } ) );
+	var keys_custFuncs = ( keys.filter(function(d,i,a){ if(featureDetection.reqs[d].type=="customFunction")  { return d; } } ) );
 
 	// console.log("keys_libs:", keys_libs);
 	// console.log("keys_polys:", keys_polys);
+	// console.log("keys_custFuncs:", keys_custFuncs);
 
 	var createTable = function(keys){
 		// Set the values.
 		for(i=0; i<keys.length; i++){
 			// Flags
-			hadNatively = featureDetection.reqs [ keys[i] ].hadNatively ;
-			have        = featureDetection.reqs [ keys[i] ].have        ;
-			req         = featureDetection.reqs [ keys[i] ].req        ;
+			hadNatively = featureDetection.reqs [ keys[i] ].hadNatively ? "YES" : "-";
+			have        = featureDetection.reqs [ keys[i] ].have        ? "YES" : "-";
+			req         = featureDetection.reqs [ keys[i] ].req         ? "YES" : "-";
 
 			// Set flag: hadNatively
 			if(hadNatively==null){ hadNatively="";}
@@ -58,8 +60,9 @@ function drawResultsTable(){
 			td5 = document.createElement('td');
 			td6 = document.createElement('td');
 
-			if     ( featureDetection.reqs [ keys[i] ].type == "library"  ){row["style"]["background-color"] = "#b8e0b8"; }
-			else if( featureDetection.reqs [ keys[i] ].type == "polyfill" ){}
+			if     ( featureDetection.reqs [ keys[i] ].type == "library"        ){ row["style"]["background-color"] = "#b8e0b8"; }
+			else if( featureDetection.reqs [ keys[i] ].type == "polyfill"       ){ row["style"]["background-color"] = "#b8b8e0"; }
+			else if( featureDetection.reqs [ keys[i] ].type == "customFunction" ){ row["style"]["background-color"] = "#e0b8b8"; }
 
 			// Set the text inside of each element.
 			th1.innerHTML = "<a href='"+featureDetection.reqs [ keys[i] ].url    +"' target='_blank'>"+keys[i]+"</a>";
@@ -83,6 +86,7 @@ function drawResultsTable(){
 	};
 
 	createTable(keys_libs);
+	createTable(keys_custFuncs);
 	createTable(keys_polys);
 
 	// Adjust the caption.
@@ -96,7 +100,7 @@ function updateLoadtime(loadTime){
 		table.querySelector("caption").innerHTML += "<div class=\"loadtimeCaption\">Load-time: "+loadTime+" ms</div>";
 	}
 }
-function getQueryString(){
+function getQueryStringAsObj(){
 	var str = window.location.search ;
 	var obj = {} ;
 	var part ;
@@ -158,6 +162,9 @@ function addLinksToHomepage(){
 
 window.onload = function(){
 	window.onload = null;
+	console.log("********************************");
+	console.log("*** -- Feature Loader v1c -- ***");
+	console.log("********************************");
 
 	// Feature Loader config:
 	featureDetection.config.usePhp         = false;
@@ -174,16 +181,12 @@ window.onload = function(){
 		// "momentJs"
 	];
 
-	actOnQueryString ( getQueryString() );
+	actOnQueryString ( getQueryStringAsObj() );
 
 	addLinksToHomepage();
 
 	var startTS=performance.now().toFixed(1);
 	var endTS;
-
-	console.log("********************************");
-	console.log("*** -- Feature Loader v1c -- ***");
-	console.log("********************************");
 
 	drawResultsTable();
 	var intervalId=setInterval(function(){
@@ -195,16 +198,14 @@ window.onload = function(){
 	},125);
 
 	// Feature detect/replace.
-	console.log("FEATURE DETECTION/APPLY: START");
 	featureDetection.funcs.init(
 		function(res){
 			var endTS=performance.now().toFixed(1);
 			clearInterval(intervalId);
-			console.log("FEATURE DETECTION/APPLY: END");
 
 			// Ready to continue with the rest of the application setup!
 			drawResultsTable() ;
-			updateLoadtime((performance.now()-startTS).toFixed(2));
+			updateLoadtime(res.duration);
 		}
 	);
 

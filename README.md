@@ -11,6 +11,9 @@ Feature Loader helps to solve a common problem. The problem of managing a growin
   - Libraries and polyfills do not have to be all loaded at program start. Some may not be required until later. An example of this would be JSZip and FileSaver. These libraries can be used to create and download a .zip file. However, the user may not use this feature of your application every time. With Feature Loader, you can load a library or several at the point it is needed.
   - Additionally, Feature Loader is smart enough to not load the same polyfill or library again if it has already been loaded.
 
+# What is the earliest version of Internet Explorer that is supported?
+Internet Explorer support starts at version 10.
+
 ### Methods
 - Feature Loader has three main ways of getting the libraries/polyfills installed.
 The first is downloading the individual files one at a time (sequentially.) This method requires only Javascript and will result in one file download per requested feature.
@@ -41,7 +44,7 @@ INCLUDED LIBRARIES AND POLYFILLS:
 * [Object.assign] - The Object.assign() method is used to copy the values of all enumerable own properties from one or more source objects to a target object. It will return the target object.
 * [forEach_array] - Covers array.
 * [forEach_nodeList] - Covers nodeList.
-* [smoothScroll] - Allows for {behavior:smooth} scrolling..
+* [smoothScroll] - Allows for {behavior:smooth} scrolling.
 * [CustomEvent] - Normalizes CustomEvent which is different in IE
 
 ### Installation
@@ -52,7 +55,7 @@ In your website's directory copy in the "_featureLoader" folder. If you are upda
 In the <head> of the HTML:
 
 ```sh
-<script src="js/featureLoader.js"></script>
+<script src="_featureLoader/js/featureLoader.js"></script>
 ```
 
 For the function that loads when your page it ready:
@@ -60,6 +63,10 @@ For the function that loads when your page it ready:
 ```sh
 window.onload = function(){
 	window.onload = null;
+
+	var continueApp = function(){
+		// Your app will continue from this function.
+	};
 
 	// Feature Loader config:
 	featureDetection.config.usePhp         = false;
@@ -81,19 +88,19 @@ window.onload = function(){
 	console.log("********************************");
 
 	// Feature detect/replace.
-	console.log("FEATURE DETECTION: START");
 	featureDetection.funcs.init(
 		function(res){
-			console.log("FEATURE DETECTION: END");
-
 			// Ready to continue with the rest of the application setup!
-			//
-
+			continueApp();
 		}
 	);
 
-
 };
+```
+### Loading Features After Init:
+```sh
+// EXAMPLE:
+featureDetection.funcs.applyFeatures_fromList([ "JSZip", "FileSaver", "momentJs"]);
 ```
 
 License
@@ -107,9 +114,10 @@ GPL3
 [Promise]:<https://github.com/petkaantonov/bluebird>
 [JSZip]:<https://github.com/Stuk/jszip>
 [FileSaver]:<https://github.com/eligrey/FileSaver.js>
-[sha512]:<http://pajhome.org.uk/crypt/md5>
+[sha512]:<https://web.archive.org/web/20170806032838/http://www.happycode.info:80/javascript-sha-512/>
 [chartsJs]:<https://www.chartjs.org/>
 [momentJs]:<http://momentjs.com/>
+
 [repeat]:<https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/repeat>
 [padStart]:<https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/padStart>
 [padEnd]:<https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/padEnd>

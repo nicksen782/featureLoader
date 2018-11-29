@@ -36,8 +36,8 @@
   "have"        : null,
   "hadNatively" : null,
   "url"         : "_featureLoader/libs/sha512.min.js",
-  "test"        : "if(typeof hex_sha512 === \"undefined\")  { false; } else { true; };",
-  "website"     : "http:/pajhome.org.uk/crypt/md5"
+  "test"        : "if(typeof hex_sha512 == \"undefined\")  { false; } else { true; };",
+  "website"     : "https://coursesweb.net/javascript/sha512-encrypt-hash_cs"
  },
  "chartsJs": {
   "type"        : "library",
@@ -58,6 +58,16 @@
   "url"         : "_featureLoader/libs/moment.min.js",
   "test"        : "if(typeof moment === \"undefined\")  { false; } else { true; };",
   "website"     : "http:/momentjs.com/"
+ },
+ "xml2json": {
+  "type"        : "library",
+  "text"        : "",
+  "req"         : false,
+  "have"        : null,
+  "hadNatively" : null,
+  "url"         : "_featureLoader/libs/xml2json.min.js",
+  "test"        : "if(typeof X2JS === \"undefined\")  { false; } else { true; };",
+  "website"     : "https://github.com/abdmob/x2js"
  },
 
 
@@ -171,5 +181,16 @@
   "url"         : "_featureLoader/polyfills/CustomEvent.js",
   "test"        : "if ( typeof window.CustomEvent !== \"function\" ) { false; } else { true; }",
   "website"     : "https:/developer.mozilla.org/en-US/docs/Web/API/CustomEvent/CustomEvent"
+ },
+
+  "getQueryStringAsObj": {
+  "type"        : "customFunction",
+  "text"        : "Breaks out the queryString into key/value pairs and returns them as an object.",
+  "req"         : false,
+  "have"        : null,
+  "hadNatively" : null,
+  "url"         : "_featureLoader/customFunctions/getQueryStringAsObj.js",
+  "test"        : "if(typeof window.getQueryStringAsObj != \"function\")  { false; } else { true; };",
+  "website"     : "https://www.nicksen782/featureLoader/customFunctions/getQueryStringAsObj.js"
  }
 }

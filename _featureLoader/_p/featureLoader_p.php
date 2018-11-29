@@ -1,5 +1,6 @@
 <?php
-// /home/ubuntu/workspace/ideas/featureLoader/_featureLoader/_p
+
+//
 chdir("..");
 
 switch($_POST['o']){
@@ -15,6 +16,7 @@ function getDb(){
 	// If requested, blank the website and text fields. They wouldn't normally be seen in a production application.
 	$NO_includeText_flag    = $_POST["includeText"]    == "true" ? false : true ;
 	$NO_includeWebsite_flag = $_POST["includeWebsite"] == "true" ? false : true ;
+
 	if( $NO_includeText_flag || $NO_includeWebsite_flag ){
 		$json = json_decode( file_get_contents("featureLoader.json"), true );
 		foreach($json as $key => $value){
@@ -23,6 +25,7 @@ function getDb(){
 		}
 		echo json_encode($json);
 	}
+
 	// Just send the file if there was no request to blank those two fields.
 	else{
 		$json = file_get_contents("featureLoader.json");
@@ -48,7 +51,11 @@ function getData(){
 		// _featureLoader
 		$urls[$i] = str_replace('_featureLoader/', '', $urls[$i]);
 		$content = file_get_contents( $urls[$i] );
-		$fileText .= "\r\n// *** ". $missingReqs[$i] ." ***\r\n" . file_get_contents( $urls[$i] );
+		$fileText .= ""
+			. "\r\n" . "// *** " . $missingReqs[$i] ." ***\r\n"
+			. file_get_contents( $urls[$i] )
+			. "\r\n"
+			;
 	}
 
 	// Normalize.
