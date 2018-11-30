@@ -1,9 +1,6 @@
-// Array.prototype.findIndex
-// IE doesn't support .findIndex... this polyfill will help.
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex?v=example
-// https://tc39.github.io/ecma262/#sec-array.prototype.findIndex
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex?v=example#Polyfill
+// https://tc39.github.io/ecma262/#sec-array.prototype.findindex
 if (!Array.prototype.findIndex) {
-  //console.log("FEATURE REPLACEMENT: Array.prototype.findIndex is missing. Adding with polyfill...");
   Object.defineProperty(Array.prototype, 'findIndex', {
     value: function(predicate) {
      // 1. Let O be ? ToObject(this value).
@@ -43,6 +40,8 @@ if (!Array.prototype.findIndex) {
 
       // 7. Return -1.
       return -1;
-    }
+    },
+    configurable: true,
+    writable: true
   });
 }

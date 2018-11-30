@@ -5,7 +5,7 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 	<meta charset="UTF-8">
 	<link rel="icon" href="data:;base64,iVBORw0KGgo=">
-	<title>featureDetection_v1b</title>
+	<title>Feature Loader v1c</title>
 
 	<!-- CSS -->
 	<link rel="stylesheet" type="text/css" href="css/css_reset.css">
@@ -17,33 +17,49 @@
 	<!-- <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>               -->
 
 	<!--JAVASCRIPT-->
-	<script src="js/featureLoader.js"></script>
+	<!--<script src="js/featureLoader.min.js"></script>-->
+	<script src="_featureLoader/js/featureLoader.js"></script>
 	<script src="js/index.js"></script>
 
 </head>
 
 <body>
+	<div id="header">
+		<hr>
+		Feature Loader v1c
+		<hr>
+	</div>
 
-	<center>
-		Feature Loader v1b <br>
-		See the console for details on what was loaded!<br>
+	<div id="main">
+
+		<div id="links"></div>
+
 		<br>
 
 		<div id="scanresults">
 			<table>
+			<caption>Feature Statuses</caption>
 				<tr>
 					<th>FEATURE</th>
 					<th>WEBSITE</th>
 					<th>TYPE</th>
 					<th>REQUIRED</th>
 					<th>NATIVE</th>
-					<th>HAVE</th>
+					<th>HAVE/LOADED</th>
 					<th>TEXT</th>
 				</tr>
 			</table>
-
 		</div>
-	</center>
+
+		<br>
+
+	</div>
+
+	<div id="footer">
+		<hr>
+		&nbsp;Feature Loader (2018) Nickolas Andersen (nicksen782)
+		<hr>
+	</div>
 
 </body>
 
