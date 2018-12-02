@@ -183,7 +183,7 @@
   "website"     : "https:/developer.mozilla.org/en-US/docs/Web/API/CustomEvent/CustomEvent"
  },
 
-  "getQueryStringAsObj": {
+ "getQueryStringAsObj": {
   "type"        : "customFunction",
   "text"        : "Breaks out the queryString into key/value pairs and returns them as an object.",
   "req"         : false,

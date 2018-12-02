@@ -162,9 +162,9 @@ function addLinksToHomepage(){
 
 window.onload = function(){
 	window.onload = null;
-	console.log("********************************");
-	console.log("*** -- Feature Loader v1c -- ***");
-	console.log("********************************");
+	console.log("**************************************");
+	console.log("*** -- Feature Loader v1d 1.0.1 -- ***");
+	console.log("**************************************");
 
 	// Feature Loader config:
 	featureDetection.config.usePhp         = false;
