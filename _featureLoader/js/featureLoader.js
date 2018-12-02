@@ -13,6 +13,7 @@ var featureDetection = {
 		includeWebsite : false ,
 		userReqs  : []
 	},
+	version: "vd1 1.0.1",
 	funcs:{
 		// Performs eval within the specified context on a string.
 		evalInContext             : function(js, context) {
@@ -21,34 +22,41 @@ var featureDetection = {
 		} ,
 		// Checks if the feature has already been loaded.
 		isTheFeatureAlreadyLoaded : function(feature){
+			// NOTE: Returning a true means that the feature already exists or it is an unknown feature.
+			// NOTE: Returning a true means do not try to load the specified feature.
+
 			var keys = Object.keys(featureDetection.reqs);
 
 			// Check right away if the feature's test will pass.
 			try{
 				// Does the test pass?
 				if( eval(featureDetection.reqs[feature].test) === false ){
-					// This feature CAN be loaded.
+					// This feature does not exist and CAN be loaded.
 					return false;
 				}
 				else                                                    {
-					throw "The specified feature is missing.";
+					// This feature already exists.
+					return true;
 				}
 			}
 			catch(e){
 				// Is the requested feature one that is known to us?
 				if     ( keys.indexOf(feature) == -1 ){
-					console.log("  -- UNKNOWN FEATURE:", feature, "(E:1)");
+					console.warn("  -- UNKNOWN FEATURE:", feature, "(E:1)");
+					// Unknown feature. Don't try to load it.
 					return true;
 				}
 
 				// Similar check to the one above (likely redunant.)
 				else if( featureDetection.reqs[feature] == undefined ){
-					console.log("  -- UNKNOWN FEATURE:", feature, "(E:2)");
+					console.warn("  -- UNKNOWN FEATURE:", feature, "(E:2)");
+					// Unknown feature. Don't try to load it.
 					return true;
 				}
 
 				// This feature CAN be loaded.
 				else{
+					// This feature does not exist and CAN be loaded.
 					return false;
 				}
 			}
