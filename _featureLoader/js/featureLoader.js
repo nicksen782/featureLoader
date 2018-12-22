@@ -6,14 +6,17 @@
 var featureDetection = {
 	reqs:{
 	},
+	backup_console : {},
 	config:{
-		usePhp         : false ,
-		useAsync       : true  ,
-		includeText    : false ,
-		includeWebsite : false ,
+		usePhp                : false ,
+		useAsync              : true  ,
+		includeText           : false ,
+		includeWebsite        : false ,
+		hideProgressInConsole : false ,
+		useLocalStorageCache  : false ,
 		userReqs  : []
 	},
-	version: "vd1 1.0.1",
+	version: "vd1 1.1.0",
 	funcs:{
 		// Performs eval within the specified context on a string.
 		evalInContext             : function(js, context) {
@@ -82,9 +85,12 @@ var featureDetection = {
 
 					var finished = function(data) {
 						data = xhr.response;
+						// Eval the JavaScript that was sent back. This will load the code.
 						featureDetection.funcs.evalInContext(data, window);
+
+						// Check all the features...
 						new_features.map(function(d,i,a){
-							// Check if the feature's test will pass.
+							// Check if the features' test will pass.
 							try{
 								// Does the test pass?
 								if( eval(featureDetection.reqs[d].test) == true ){
@@ -98,14 +104,14 @@ var featureDetection = {
 							}
 							catch(e){
 								featureDetection.reqs[d].have=false;
-								console.log("** FAILURE TO LOAD: ("+featureDetection.reqs[d].type+") ->" , d ,  " (ERROR)" );
+								featureDetection.backup_console.log("** FAILURE TO LOAD: ("+featureDetection.reqs[d].type+") ->" , d ,  " (ERROR)" );
 							}
 						});
 
 						resolve();
 					};
 					var error = function(data) {
-						console.log("error:", this, data);
+						featureDetection.backup_console.log("error:", this, data);
 						reject(data);
 					};
 					var xhr = new XMLHttpRequest();
@@ -114,6 +120,76 @@ var featureDetection = {
 
 					var fd   = new FormData();
 					var o    = "getData" ;
+					fd.append("o"           , o);
+					fd.append("missingReqs" , new_features );
+
+					var url = "_featureLoader/_p/featureLoader_p.php?o="+o+"&missingReqs="+new_features.join(",");
+					// console.log(url);
+					xhr.open(
+						"POST", // Type of method (GET/POST)
+						url  // Destination
+					, true);
+					xhr.send(fd);
+
+				});
+			};
+			var PHP_combinedFeatures2 = function(features){
+				return new Promise(function(resolve,reject){
+					var new_features = [];
+					for(var i=0; i<features.length; i+=1){
+						// Remove the feature from the list if it is already known to be loaded.
+						if( ! featureDetection.funcs.isTheFeatureAlreadyLoaded( features[i] ) ){
+							new_features.push( features[i] );
+						}
+					}
+
+					if( !new_features.length ) {
+						resolve();
+						return;
+					}
+
+					var finished = function(data) {
+						data = xhr.response;
+						data = JSON.parse(data);
+
+						// Find the matching key in the response. Eval the response. Perform the test again. Indicate success or failure.
+						new_features.map(function(d,i,a){
+							// Eval this entry.
+							featureDetection.funcs.evalInContext(data[d], window);
+
+							// Perform test then indicate success or failure.
+							try{
+								if( eval(featureDetection.reqs[d].test) == true ){
+									featureDetection.reqs[d].have=true;
+									console.log("  LOADED: ("+featureDetection.reqs[d].type+") ->" , d ,  " (OK)" );
+
+									// if(featureDetection.config.useLocalStorageCache){}
+								}
+								else{
+									featureDetection.reqs[d].have=false;
+									featureDetection.backup_console.log("** FAILURE TO LOAD: ("+featureDetection.reqs[d].type+") ->" , d ,  " (ERROR)" );
+									throw "Feature was NOT successfully loaded: "+d;
+								}
+							}
+							catch(e){
+								featureDetection.reqs[d].have=false;
+								featureDetection.backup_console.log("** FAILURE TO LOAD: ("+featureDetection.reqs[d].type+") ->" , d ,  " (ERROR)" );
+								throw "Feature was NOT successfully loaded: "+d;
+							}
+						});
+
+						resolve();
+					};
+					var error = function(data) {
+						featureDetection.backup_console.log("error:", this, data);
+						reject(data);
+					};
+					var xhr = new XMLHttpRequest();
+					xhr.addEventListener("load", finished);
+					xhr.addEventListener("error", error);
+
+					var fd   = new FormData();
+					var o    = "getData2" ;
 					fd.append("o"           , o);
 					fd.append("missingReqs" , new_features );
 
@@ -142,6 +218,7 @@ var featureDetection = {
 
 						var finished = function(data) {
 							data = xhr.response;
+							// Eval the JavaScript that was sent back. This will load the code.
 							featureDetection.funcs.evalInContext(data, window);
 
 							// Check if the feature's test will pass.
@@ -150,6 +227,8 @@ var featureDetection = {
 								if( eval(featureDetection.reqs[feature].test) == true ){
 									featureDetection.reqs[feature].have=true;
 									console.log("  LOADED: ("+featureDetection.reqs[feature].type+") ->" , feature ,  " (OK)" );
+
+									// if(featureDetection.config.useLocalStorageCache){}
 								}
 								else {
 									featureDetection.reqs[feature].have=false;
@@ -158,13 +237,13 @@ var featureDetection = {
 							}
 							catch(e){
 								featureDetection.reqs[feature].have=false;
-								console.log("** FAILURE TO LOAD: ("+featureDetection.reqs[feature].type+") ->" , feature ,  " (ERROR)" );
+								featureDetection.backup_console.log("** FAILURE TO LOAD: ("+featureDetection.reqs[feature].type+") ->" , feature ,  " (ERROR)" );
 							}
 
 							resolve();
 						};
 						var error = function(data) {
-							console.log("error:", this, data);
+							featureDetection.backup_console.log("error:", this, data);
 							reject(data);
 						};
 
@@ -188,7 +267,7 @@ var featureDetection = {
 								resolve();
 							}
 							,function(error) {
-								console.log("error:", error);
+								featureDetection.backup_console.log("error:", error);
 								reject();
 							}
 						);
@@ -224,7 +303,7 @@ var featureDetection = {
 										// Start the next download process.
 										iterative();
 									},
-									function(res){ console.log("ERROR:", res); reject(); }
+									function(res){ featureDetection.backup_console.log("ERROR:", res); reject(); }
 								);
 
 							};
@@ -241,11 +320,12 @@ var featureDetection = {
 				// Use PHP?
 				if(featureDetection.config.usePhp===true){
 					// Get the code for each feature as one download.
-					PHP_combinedFeatures(features).then(
+					// PHP_combinedFeatures(features).then(
+					PHP_combinedFeatures2(features).then(
 						function(res){
 							resolve(res);
 						},
-						function(res){ console.log("ERROR", res); reject(res); }
+						function(res){ featureDetection.backup_console.log("ERROR", res); reject(res); }
 					);
 				}
 				// No PHP. Use JavaScript.
@@ -256,7 +336,7 @@ var featureDetection = {
 							function(res){
 								resolve(res);
 							},
-							function(res){ console.log("ERROR", res); reject(res); }
+							function(res){ featureDetection.backup_console.log("ERROR", res); reject(res); }
 						);
 					}
 					// Chain each download one after the other? (SYNC)
@@ -265,7 +345,7 @@ var featureDetection = {
 							function(res){
 								resolve(res);
 							},
-							function(res){ console.log("ERROR", res); reject(res); }
+							function(res){ featureDetection.backup_console.log("ERROR", res); reject(res); }
 						);
 					}
 				}
@@ -290,7 +370,7 @@ var featureDetection = {
 					resolve(data);
 				};
 				var error = function(data) {
-					console.log("error:", this, data);
+					featureDetection.backup_console.log("error:", this, data);
 					reject();
 				};
 
@@ -410,18 +490,18 @@ var featureDetection = {
 											function(res){
 												resolve(res);
 											},
-											function(res){ console.log("error", res); reject(res); }
+											function(res){ featureDetection.backup_console.log("error", res); reject(res); }
 										);
 									},
-									function(res){ console.log("error", res); reject(res); }
+									function(res){ featureDetection.backup_console.log("error", res); reject(res); }
 								);
 
 							},
-							function(res){ console.log("error", res); reject(res); }
+							function(res){ featureDetection.backup_console.log("error", res); reject(res); }
 						);
 
 					},
-					function(res){ console.log("fail", res); reject(res); }
+					function(res){ featureDetection.backup_console.log("fail", res); reject(res); }
 				);
 
 			});
@@ -429,6 +509,20 @@ var featureDetection = {
 		}             ,
 		// This will perform the feature detection and feature loading.
 		init                      : function(callback){
+			featureDetection.backup_console = { };
+			var methods = Object.keys(window.console);
+			// Backup console.
+			for(var i=0;i<methods.length;i++){
+				featureDetection.backup_console[ methods[i] ] = console[ methods[i] ];
+			}
+
+			if(featureDetection.config.hideProgressInConsole){
+				// Disable console.
+				for(var i=0;i<methods.length;i++){
+					console[ methods[i] ] = function(){};
+				}
+			}
+
 			console.log("FEATURE DETECTION/APPLY: START");
 			var startTS = performance.now();
 			var endTS = 0;
@@ -442,6 +536,16 @@ var featureDetection = {
 						duration = (endTS-startTS).toFixed(2);
 						console.log("FEATURE DETECTION/APPLY: END" + " ("+duration+" ms)", res ? res : "");
 
+						if(featureDetection.config.hideProgressInConsole){
+							// Restore and enable console.
+							for(var i=0;i<methods.length;i++){
+								console[ methods[i] ] = featureDetection.backup_console[ methods[i] ];
+								// featureDetection.backup_console[ methods[i] ] = undefined;
+							}
+
+							// featureDetection.backup_console=undefined;
+						}
+
 						callback(
 							{
 								res      : res,
@@ -449,7 +553,7 @@ var featureDetection = {
 							}
 						);
 					},
-					function(res){ console.log("error"  , res); }
+					function(res){ featureDetection.backup_console.log("error"  , res); }
 				);
 			};
 
@@ -469,6 +573,7 @@ var featureDetection = {
 		}
 	}
 };
+
 	// EXAMPLE USAGE:
 	/*
 
@@ -481,10 +586,11 @@ window.onload = function(){
 	window.onload = null;
 
 	// Feature Loader config:
-	featureDetection.config.usePhp         = false;
-	featureDetection.config.useAsync       = true;
-	featureDetection.config.includeText    = false; // Using false makes the database download smaller.
-	featureDetection.config.includeWebsite = false; // Using false makes the database download smaller.
+	featureDetection.config.usePhp                = false;
+	featureDetection.config.useAsync              = true;
+	featureDetection.config.includeText           = false; // Using false makes the database download smaller.
+	featureDetection.config.includeWebsite        = false; // Using false makes the database download smaller.
+	featureDetection.config.hideProgressInConsole = false; // Using false hides anything that Feature Loader would output other than an error.
 
 	// Load these libraries also:
 	featureDetection.config.userReqs = [
@@ -495,9 +601,9 @@ window.onload = function(){
 		// "momentJs"
 	];
 
-	console.log("********************************");
-	console.log("*** -- Feature Loader v1c -- ***");
-	console.log("********************************");
+	console.log("**********************************");
+	console.log("*** -- Feature Loader 1.1.0 -- ***");
+	console.log("**********************************");
 
 	// Feature detect/replace.
 	featureDetection.funcs.init(
