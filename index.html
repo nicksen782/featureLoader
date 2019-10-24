@@ -5,7 +5,7 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 	<meta charset="UTF-8">
 	<link rel="icon" href="data:;base64,iVBORw0KGgo=">
-	<title>Feature Loader v1d 1.0.1</title>
+	<title>Feature Loader v1d 1.1.0</title>
 
 	<!-- CSS -->
 	<link rel="stylesheet" type="text/css" href="css/css_reset.css">
@@ -26,13 +26,57 @@
 <body>
 	<div id="header">
 		<hr>
-		Feature Loader v1d 1.0.1
+		Feature Loader v1d 1.1.0
 		<hr>
 	</div>
 
 	<div id="main">
 
 		<div id="links"></div>
+
+		<br>
+
+		<div id="usageInfo">
+<pre>
+Config flags:
+ featureDetection.config.usePhp                : // PHP-only: if true it will use PHP to download all requested files as one download.
+ featureDetection.config.includeText           : // PHP-only: Using false makes the database download smaller.
+ featureDetection.config.includeWebsite        : // PHP-only: Using false makes the database download smaller.
+ featureDetection.config.useAsync              : // JS-only: if true it it will use async downloads when using JS for feature requests.
+ featureDetection.config.hideProgressInConsole : // Using false hides anything that Feature Loader would output to the console other than an error.
+
+Load specified optional features at start-up
+ featureDetection.config.userReqs = [
+  "JSZip"    ,
+  "FileSaver",
+  "sha512"
+ ];
+
+Create function that will load after the completion of Feature Loader:
+ var continueApp = function(){
+  // Put the rest of your website code here.
+ }
+
+Start Feature Loader
+ featureDetection.funcs.init(
+  function(res){
+   continueApp();
+  }
+ );
+
+Load a feature later when needed:
+ featureDetection.funcs.applyFeatures_fromList([ "sha512" ]).then(
+  function(res){
+   console.log("bringing in the login dialog", res, featureDetection.funcs.isTheFeatureAlreadyLoaded("sha512") );
+   $( "#dialog_login" ).dialog( dialogOptions );
+  }
+  ,function(error){ console.log("Error loading feature."); }
+ );
+
+You should load Feature Loader using window.onload or something to that affect. It needs to run BEFORE the rest of your website in order to work best.
+</pre>
+
+		</div>
 
 		<br>
 

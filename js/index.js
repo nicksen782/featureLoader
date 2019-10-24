@@ -128,13 +128,18 @@ function getQueryStringAsObj(){
 	return obj;
 }
 function actOnQueryString(qstring){
-	if     (qstring.usePhp=="true")    { featureDetection.config.usePhp=true; }
+	if     (qstring.usePhp=="true")    { featureDetection.config.usePhp=true;  }
 	else if(qstring.usePhp=="false")   { featureDetection.config.usePhp=false; }
 	else                               { featureDetection.config.usePhp=false; }
 
-	if     (qstring.useAsync=="true")  { featureDetection.config.useAsync=true; }
+	if     (qstring.useAsync=="true")  { featureDetection.config.useAsync=true;  }
 	else if(qstring.useAsync=="false") { featureDetection.config.useAsync=false; }
-	else                               { featureDetection.config.useAsync=true; }
+	else                               { featureDetection.config.useAsync=true;  }
+
+	// useLocalStorageCache
+	if     (qstring.useLocalStorageCache=="true")  { featureDetection.config.useLocalStorageCache=true;  }
+	else if(qstring.useLocalStorageCache=="false") { featureDetection.config.useLocalStorageCache=false; }
+	else                                           { featureDetection.config.useLocalStorageCache=true;  }
 
 }
 function addLinksToHomepage(){
@@ -144,7 +149,7 @@ function addLinksToHomepage(){
 	var optionActive1 = (featureDetection.config.usePhp!=true && featureDetection.config.useAsync==true) ? true : false ;
 	var optionActive2 = (featureDetection.config.usePhp!=true && featureDetection.config.useAsync!=true) ? true : false ;
 	var optionActive3 = (featureDetection.config.usePhp==true && featureDetection.config.useAsync==true) ? true : false ;
-
+// useLocalStorageCache
 	var newHTML = "";
 	newHTML += "<table>";
 	newHTML += "<tr> <td> CONFIG:              </td> <td> &nbsp; </td></tr>";
@@ -163,14 +168,16 @@ function addLinksToHomepage(){
 window.onload = function(){
 	window.onload = null;
 	console.log("**************************************");
-	console.log("*** -- Feature Loader v1d 1.0.1 -- ***");
+	console.log("*** -- Feature Loader v1d 1.1.0 -- ***");
 	console.log("**************************************");
 
 	// Feature Loader config:
-	featureDetection.config.usePhp         = false;
-	featureDetection.config.useAsync       = true;
-	featureDetection.config.includeText    = true; // Using false makes the database download smaller.
-	featureDetection.config.includeWebsite = true; // Using false makes the database download smaller.
+	featureDetection.config.usePhp                = false;
+	featureDetection.config.useAsync              = true;
+	featureDetection.config.includeText           = true; // Using false makes the database download smaller.
+	featureDetection.config.includeWebsite        = true; // Using false makes the database download smaller.
+	featureDetection.config.hideProgressInConsole = false; // Using false hides anything that Feature Loader would output other than an error.
+	featureDetection.config.useLocalStorageCache  = false;
 
 	// Load these libraries also:
 	featureDetection.config.userReqs = [
@@ -180,6 +187,7 @@ window.onload = function(){
 		// "chartsJs" ,
 		// "momentJs"
 	];
+
 
 	actOnQueryString ( getQueryStringAsObj() );
 

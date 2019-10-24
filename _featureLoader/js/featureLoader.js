@@ -1,3 +1,5 @@
+/* global performance */
+
 // NOTE: "eval" is used here.
 // Eval should NOT be used on any code that you do not 100% control.
 // All code that will be seen by eval actually comes from a folder within the application.
@@ -6,15 +8,24 @@
 var featureDetection = {
 	reqs:{
 	},
+	backup_console : {},
 	config:{
-		usePhp         : false ,
-		useAsync       : true  ,
-		includeText    : false ,
-		includeWebsite : false ,
-		userReqs  : []
+		usePhp                : false ,
+		useAsync              : true  ,
+		includeText           : false ,
+		includeWebsite        : false ,
+		hideProgressInConsole : false ,
+		useLocalStorageCache  : false ,
+		userReqs   : [] ,
+		userFiles  : []
 	},
-	version: "vd1 1.0.1",
+	version: "vd1 1.1.0",
 	funcs:{
+		// UNFINISHED
+		applyUserJsFiles : function(){
+			return new Promise(function(resolve,reject){ resolve(); });
+		},
+
 		// Performs eval within the specified context on a string.
 		evalInContext             : function(js, context) {
 			// featureDetection.funcs.evalInContext(data, window);
@@ -65,7 +76,7 @@ var featureDetection = {
 		// Loads the specified features via an array.
 		applyFeatures_fromList    : function(features){
 			// Used if the loading method was PHP:
-			var PHP_combinedFeatures = function(features){
+			var PHP_combinedFeatures2 = function(features){
 				return new Promise(function(resolve,reject){
 					var new_features = [];
 					for(var i=0; i<features.length; i+=1){
@@ -82,30 +93,38 @@ var featureDetection = {
 
 					var finished = function(data) {
 						data = xhr.response;
-						featureDetection.funcs.evalInContext(data, window);
+						data = JSON.parse(data);
+
+						// Find the matching key in the response. Eval the response. Perform the test again. Indicate success or failure.
 						new_features.map(function(d,i,a){
-							// Check if the feature's test will pass.
+							// Eval this entry.
+							featureDetection.funcs.evalInContext(data[d], window);
+
+							// Perform test then indicate success or failure.
 							try{
-								// Does the test pass?
 								if( eval(featureDetection.reqs[d].test) == true ){
 									featureDetection.reqs[d].have=true;
 									console.log("  LOADED: ("+featureDetection.reqs[d].type+") ->" , d ,  " (OK)" );
+
+									// if(featureDetection.config.useLocalStorageCache){}
 								}
-								else {
+								else{
 									featureDetection.reqs[d].have=false;
-									throw "Feature was NOT successfully loaded.";
+									featureDetection.backup_console.log("** FAILURE TO LOAD: ("+featureDetection.reqs[d].type+") ->" , d ,  " (ERROR)" );
+									throw "Feature was NOT successfully loaded: "+d;
 								}
 							}
 							catch(e){
 								featureDetection.reqs[d].have=false;
-								console.log("** FAILURE TO LOAD: ("+featureDetection.reqs[d].type+") ->" , d ,  " (ERROR)" );
+								featureDetection.backup_console.log("** FAILURE TO LOAD: ("+featureDetection.reqs[d].type+") ->" , d ,  " (ERROR)" );
+								throw "Feature was NOT successfully loaded: "+d;
 							}
 						});
 
 						resolve();
 					};
 					var error = function(data) {
-						console.log("error:", this, data);
+						featureDetection.backup_console.log("error:", this, data);
 						reject(data);
 					};
 					var xhr = new XMLHttpRequest();
@@ -113,7 +132,7 @@ var featureDetection = {
 					xhr.addEventListener("error", error);
 
 					var fd   = new FormData();
-					var o    = "getData" ;
+					var o    = "getData2" ;
 					fd.append("o"           , o);
 					fd.append("missingReqs" , new_features );
 
@@ -142,6 +161,7 @@ var featureDetection = {
 
 						var finished = function(data) {
 							data = xhr.response;
+							// Eval the JavaScript that was sent back. This will load the code.
 							featureDetection.funcs.evalInContext(data, window);
 
 							// Check if the feature's test will pass.
@@ -150,6 +170,8 @@ var featureDetection = {
 								if( eval(featureDetection.reqs[feature].test) == true ){
 									featureDetection.reqs[feature].have=true;
 									console.log("  LOADED: ("+featureDetection.reqs[feature].type+") ->" , feature ,  " (OK)" );
+
+									// if(featureDetection.config.useLocalStorageCache){}
 								}
 								else {
 									featureDetection.reqs[feature].have=false;
@@ -158,13 +180,13 @@ var featureDetection = {
 							}
 							catch(e){
 								featureDetection.reqs[feature].have=false;
-								console.log("** FAILURE TO LOAD: ("+featureDetection.reqs[feature].type+") ->" , feature ,  " (ERROR)" );
+								featureDetection.backup_console.log("** FAILURE TO LOAD: ("+featureDetection.reqs[feature].type+") ->" , feature ,  " (ERROR)" );
 							}
 
 							resolve();
 						};
 						var error = function(data) {
-							console.log("error:", this, data);
+							featureDetection.backup_console.log("error:", this, data);
 							reject(data);
 						};
 
@@ -188,7 +210,7 @@ var featureDetection = {
 								resolve();
 							}
 							,function(error) {
-								console.log("error:", error);
+								featureDetection.backup_console.log("error:", error);
 								reject();
 							}
 						);
@@ -224,7 +246,7 @@ var featureDetection = {
 										// Start the next download process.
 										iterative();
 									},
-									function(res){ console.log("ERROR:", res); reject(); }
+									function(res){ featureDetection.backup_console.log("ERROR:", res); reject(); }
 								);
 
 							};
@@ -241,11 +263,11 @@ var featureDetection = {
 				// Use PHP?
 				if(featureDetection.config.usePhp===true){
 					// Get the code for each feature as one download.
-					PHP_combinedFeatures(features).then(
+					PHP_combinedFeatures2(features).then(
 						function(res){
 							resolve(res);
 						},
-						function(res){ console.log("ERROR", res); reject(res); }
+						function(res){ featureDetection.backup_console.log("ERROR", res); reject(res); }
 					);
 				}
 				// No PHP. Use JavaScript.
@@ -256,7 +278,7 @@ var featureDetection = {
 							function(res){
 								resolve(res);
 							},
-							function(res){ console.log("ERROR", res); reject(res); }
+							function(res){ featureDetection.backup_console.log("ERROR", res); reject(res); }
 						);
 					}
 					// Chain each download one after the other? (SYNC)
@@ -265,7 +287,7 @@ var featureDetection = {
 							function(res){
 								resolve(res);
 							},
-							function(res){ console.log("ERROR", res); reject(res); }
+							function(res){ featureDetection.backup_console.log("ERROR", res); reject(res); }
 						);
 					}
 				}
@@ -290,7 +312,7 @@ var featureDetection = {
 					resolve(data);
 				};
 				var error = function(data) {
-					console.log("error:", this, data);
+					featureDetection.backup_console.log("error:", this, data);
 					reject();
 				};
 
@@ -410,25 +432,73 @@ var featureDetection = {
 											function(res){
 												resolve(res);
 											},
-											function(res){ console.log("error", res); reject(res); }
+											function(res){ featureDetection.backup_console.log("error", res); reject(res); }
 										);
 									},
-									function(res){ console.log("error", res); reject(res); }
+									function(res){ featureDetection.backup_console.log("error", res); reject(res); }
 								);
 
 							},
-							function(res){ console.log("error", res); reject(res); }
+							function(res){ featureDetection.backup_console.log("error", res); reject(res); }
 						);
 
 					},
-					function(res){ console.log("fail", res); reject(res); }
+					function(res){ featureDetection.backup_console.log("fail", res); reject(res); }
 				);
 
 			});
 
 		}             ,
+		// // featureDetection.config.userFiles;
+		userFiles : function(){
+			return new Promise(function(resolve, reject){
+				featureDetection.backup_console.log("userFiles: This feature is not ready yet.");
+				resolve();
+			});
+
+			// featureDetection.config.userFiles.
+
+			// If set to PHP then ask PHP to provide the specified files in one download.
+			if(featureDetection.config.usePhp===true){}
+
+			// // No PHP. Use JavaScript to request all files.
+			else{
+				// Use Promise.all to start all downloads? (ASYNC)
+				if     (featureDetection.config.useAsync===true){
+					// The Promise.all inside this function will be started AFTER the array of promises has been populated.
+					var promiseAll = function(proms){
+						Promise.all(proms).then(
+							function(results){
+								resolve();
+							}
+							,function(error) {
+								featureDetection.backup_console.log("error:", error);
+								reject();
+							}
+						);
+					};
+				}
+				// Chain each download one after the other? (SYNC)
+				else{
+				}
+			}
+		},
 		// This will perform the feature detection and feature loading.
 		init                      : function(callback){
+			featureDetection.backup_console = { };
+			var methods = Object.keys(window.console);
+			// Backup console.
+			for(var i=0;i<methods.length;i++){
+				featureDetection.backup_console[ methods[i] ] = console[ methods[i] ];
+			}
+
+			if(featureDetection.config.hideProgressInConsole){
+				// Disable console.
+				for(var i=0;i<methods.length;i++){
+					console[ methods[i] ] = function(){};
+				}
+			}
+
 			console.log("FEATURE DETECTION/APPLY: START");
 			var startTS = performance.now();
 			var endTS = 0;
@@ -438,18 +508,34 @@ var featureDetection = {
 			var nextStep = function(callback){
 				featureDetection.funcs.detectAndApply().then(
 					function(res){
-						endTS = performance.now();
-						duration = (endTS-startTS).toFixed(2);
-						console.log("FEATURE DETECTION/APPLY: END" + " ("+duration+" ms)", res ? res : "");
 
-						callback(
-							{
-								res      : res,
-								duration : duration
+					featureDetection.funcs.applyUserJsFiles().then(
+						function(){
+							endTS = performance.now();
+							duration = (endTS-startTS).toFixed(2);
+							console.log("FEATURE DETECTION/APPLY: END" + " ("+duration+" ms)", res ? res : "");
+
+							if(featureDetection.config.hideProgressInConsole){
+								// Restore and enable console.
+								for(var i=0;i<methods.length;i++){
+									console[ methods[i] ] = featureDetection.backup_console[ methods[i] ];
+									// featureDetection.backup_console[ methods[i] ] = undefined;
+								}
+
+								// featureDetection.backup_console=undefined;
 							}
-						);
+
+							callback(
+								{
+									res      : res,
+									duration : duration
+								}
+							);
+						},
+						function(res){ featureDetection.backup_console.log("error"  , res); }
+					);
 					},
-					function(res){ console.log("error"  , res); }
+					function(res){ featureDetection.backup_console.log("error"  , res); }
 				);
 			};
 
@@ -461,7 +547,7 @@ var featureDetection = {
 				js.src    = "_featureLoader/libs/bluebird.min.js";
 				document.body.appendChild(js);
 			}
-			// We have Promise support. Go to the next step.
+			// We already have Promise support. Go to the next step.
 			else{
 				nextStep(callback);
 			}
@@ -469,6 +555,7 @@ var featureDetection = {
 		}
 	}
 };
+
 	// EXAMPLE USAGE:
 	/*
 
@@ -481,10 +568,11 @@ window.onload = function(){
 	window.onload = null;
 
 	// Feature Loader config:
-	featureDetection.config.usePhp         = false;
-	featureDetection.config.useAsync       = true;
-	featureDetection.config.includeText    = false; // Using false makes the database download smaller.
-	featureDetection.config.includeWebsite = false; // Using false makes the database download smaller.
+	featureDetection.config.usePhp                = false;
+	featureDetection.config.useAsync              = true;
+	featureDetection.config.includeText           = false; // Using false makes the database download smaller.
+	featureDetection.config.includeWebsite        = false; // Using false makes the database download smaller.
+	featureDetection.config.hideProgressInConsole = false; // Using false hides anything that Feature Loader would output other than an error.
 
 	// Load these libraries also:
 	featureDetection.config.userReqs = [
@@ -495,9 +583,9 @@ window.onload = function(){
 		// "momentJs"
 	];
 
-	console.log("********************************");
-	console.log("*** -- Feature Loader v1c -- ***");
-	console.log("********************************");
+	console.log("**********************************");
+	console.log("*** -- Feature Loader 1.1.0 -- ***");
+	console.log("**********************************");
 
 	// Feature detect/replace.
 	featureDetection.funcs.init(
